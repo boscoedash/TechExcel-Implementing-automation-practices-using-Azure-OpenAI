@@ -32,21 +32,19 @@ app.UseHttpsRedirection();
 
 app.MapGet("/Customer", async (string searchCriterion, string searchValue) => 
 {
-    
-    // TODO: implement search.
-    // TODO: Replace with a call to Cosmos DB.
-    var customer = new Customer
+    switch (searchCriterion)
     {
-        FirstName = "John",
-        LastName = "Doe",
-        FullName = "John Doe",
-        LoyaltyTier = LoyaltyTier.Gold,
-        YearsAsMember = 2,
-        DateOfMostRecentStay = DateTime.Now.AddDays(-1),
-        AverageRating = 4.5
-    };
-    return customer;
+        case "CustomerName":
+            return await app.Services.GetService<ICosmosService>()!.GetCustomersByName(searchValue);
+        case "LoyaltyTier":
+            return await app.Services.GetService<ICosmosService>()!.GetCustomersByLoyaltyTier(searchValue);
+        case "DateOfMostRecentStay":
+            return await app.Services.GetService<ICosmosService>()!.GetCustomersWithStaysAfterDate(DateTime.Parse(searchValue));
+        default:
+            throw new Exception("Invalid search criterion. Valid search criteria include 'CustomerName', 'LoyaltyTier', and 'DateOfMostRecentStay'.");
+    }
 })
+
     .WithName("GetCustomer")
     .WithOpenApi();
 
